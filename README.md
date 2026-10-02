@@ -91,3 +91,33 @@ cmake/         # 工具链与 CubeMX 的 CMake 胶水
 ```
 
 `build/` 是编译产物，已在 `.gitignore` 里忽略。
+
+## 提交与推送（git）
+
+本工程有两个远程，习惯上两边都推（一份上云，一份本地留底）：
+
+| 远程 | 地址 | 说明 |
+|---|---|---|
+| `origin` | `git@github.com:MKXDxiaoyudian/stm32f103-bringup.git` | GitHub，走 SSH |
+| `backup` | `/Users/zouminyu/stm32-backup.git` | 本机裸仓库（bare），离线备份 |
+
+日常三步：
+
+```bash
+cd ~/Documents/stm32/new
+
+git status --short        # 1. 先看改了哪些文件，确认没混进 build/ 或本机路径
+git add -A                # 2. 暂存（只想交一个文件就 git add Core/Src/main.c）
+git commit -m "点灯：…"    #    提交到本地
+git push origin main      # 3a. 推 GitHub
+git push backup main      # 3b. 推本地备份
+```
+
+几个注意点：
+
+- **新机器先验权**：`ssh -T git@github.com`，看到 `Hi MKXDxiaoyudian!` 才说明 key 配好了。
+- **`git status` 里的 `??` 是未跟踪文件**，`git add -A` 会一起收进去 —— 加之前扫一眼，别把 `.vscode` 里的本机绝对路径或烧录日志传上去。
+- **`.gitignore` 已经挡掉** `build/`、`mx.scratch`、`.DS_Store`、`CMakeUserPresets.json`，所以 CubeMX 重新 GENERATE CODE 后不会污染仓库；新建工程记得抄一份。
+- **提交前先编译一次**：`cmake --build build/Release` 通过再提交，避免把编不过的代码推上去。
+- **推错了想撤**：`git reset --soft HEAD~1` 撤回提交但保留改动，改完重新提交；已经推上去的话再 `git push --force-with-lease origin main`（只在自己一个人的分支上用）。
+- **`Drivers/` 是要进仓库的**（约几 MB），别一时手快把它 ignore 掉 —— 留着才能离线自包含构建。
