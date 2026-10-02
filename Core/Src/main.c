@@ -20,6 +20,7 @@
 #include "main.h"
 #include "gpio.h"
 #include "stm32f103xb.h"
+#include "stm32f1xx_hal.h"
 #include "stm32f1xx_hal_gpio.h"
 #include "stm32f1xx_hal_rcc.h"
 
@@ -88,19 +89,26 @@ int main(void)
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
-  MX_GPIO_Init();
+  MX_GPIO_Init();//同时使能了GPIOA和GPIOB的时钟
   /* USER CODE BEGIN 2 */
     /*RCC->APB2ENR = 0x00000010;
     GPIOC->CRH = 0x00300000;
     GPIOC->ODR = 0x00002000;*/
     __HAL_RCC_GPIOC_CLK_ENABLE();//时钟使能函数
+   //__HAL_RCC_GPIOA_CLK_ENABLE();//时钟使能函数
     GPIO_InitTypeDef GPIO_InitStructure;//定义GPIO初始化结构体
     GPIO_InitStructure.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStructure.Pin = GPIO_PIN_13;
-    GPIO_InitStructure.Speed = GPIO_SPEED_FREQ_HIGH;
+    GPIO_InitStructure.Speed = GPIO_SPEED_FREQ_LOW;
+    GPIO_InitStructure.Pull = GPIO_NOPULL;
+
     HAL_GPIO_Init(GPIOC, &GPIO_InitStructure );//初始化GPIO
+    GPIO_InitStructure.Pin = GPIO_PIN_0;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStructure );//初始化GPIO
     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);//设置引脚13为高电平，关灯
     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);//设置引脚13为低电平，开灯
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_RESET);//设置引脚0为高电平，关灯
+    //HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_0);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -109,6 +117,20 @@ int main(void)
   {
     /* USER CODE END WHILE */
 
+    /*设置电平循环点灯*/
+    /*HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);//设置引脚13为低电平，开灯
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_RESET);//设置引脚0为低电平，开灯
+    HAL_Delay(500);
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);//设置引脚13为高电平，关灯
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_SET);//设置引脚0为高电平，关灯
+    HAL_Delay(500);*/
+    
+    /*翻转电平点灯*/
+    HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);//翻转引脚电平
+    HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_0);
+    HAL_Delay(500);
+    
+    
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
